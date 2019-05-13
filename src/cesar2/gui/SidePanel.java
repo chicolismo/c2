@@ -7,8 +7,6 @@ import java.awt.GridBagLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.Objects;
@@ -18,7 +16,6 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.WindowConstants;
@@ -27,25 +24,27 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import cesar2.table.Table;
+import cesar2.util.Pair;
 
 public class SidePanel extends JDialog {
     private static final long serialVersionUID = 598118447667354371L;
 
-    private PropertyChangeSupport support;
-
     private boolean isDecimal;
     private short address;
     private byte value;
+
+    private final PropertyChangeSupport support;
     private final Table table;
     private final JLabel label;
     private final JTextField textField;
-    private JTable table_1;
 
     public SidePanel(JFrame owner, Table table) {
         super(owner);
         setType(Window.Type.UTILITY);
         setModalityType(Dialog.ModalityType.MODELESS);
         setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
+
+        this.support = new PropertyChangeSupport(this);
 
         this.table = Objects.requireNonNull(table);
         isDecimal = true;
@@ -97,6 +96,10 @@ public class SidePanel extends JDialog {
         support.addPropertyChangeListener(listener);
     }
 
+    public PropertyChangeSupport getSupport() {
+        return support;
+    }
+
     private void initEvents() {
         ListSelectionModel selectionModel = table.getSelectionModel();
         selectionModel.addListSelectionListener(new ListSelectionListener() {
@@ -117,19 +120,19 @@ public class SidePanel extends JDialog {
         textField.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
-            }
-        });
-
-        table.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent event) {
-                if (event.getClickCount() == 2) {
-                    int row = table.getSelectedRow();
-                    if (row != -1) {
-                        // TODO: Mudar PC e notificar observer
-                    }
+                byte newValue;
+                try {
+                    newValue = (byte) Integer.parseInt(textField.getText(), isDecimal ? 10 : 16);
                 }
+                catch (NumberFormatException e) {
+                    newValue = (byte) 0;
+                    textField.setText("0");
+                }
+                Pair<Short, Byte> oldPair = new Pair<>(address, value);
+                Pair<Short, Byte> newPair = new Pair<>(address, newValue);
+                support.firePropertyChange("rowValue", oldPair, newPair);
             }
         });
     }
+
 }

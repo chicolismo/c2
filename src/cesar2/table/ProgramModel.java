@@ -38,6 +38,17 @@ public class ProgramModel extends AbstractTableModel {
         return 4;
     }
 
+    public void setProgramCounterRow(int row) {
+        int oldValue = pcRow;
+        pcRow = row;
+        fireTableRowsUpdated(oldValue, oldValue);
+        fireTableRowsUpdated(row, row);
+    }
+
+    public int getProgramCounterRow() {
+        return pcRow;
+    }
+
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         Object value = null;

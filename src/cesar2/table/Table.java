@@ -109,7 +109,7 @@ public abstract class Table extends JTable {
 
     abstract public void setValue(int index, byte value);
 
-    public static Table of(TableModel model) {
+    public static Table of(final TableModel model) {
         Table table = null;
 
         if (model instanceof ProgramModel) {

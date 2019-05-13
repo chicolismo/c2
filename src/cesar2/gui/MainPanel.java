@@ -2,6 +2,7 @@ package cesar2.gui;
 
 import java.awt.GridLayout;
 
+import javax.swing.BoxLayout;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
@@ -25,14 +26,14 @@ public class MainPanel extends JPanel {
         executionPanel = new ExecutionPanel();
         buttons = new ButtonPanel();
 
-        RegisterPanel r0 = new RegisterPanel("R0");
-        RegisterPanel r1 = new RegisterPanel("R1");
-        RegisterPanel r2 = new RegisterPanel("R2");
-        RegisterPanel r3 = new RegisterPanel("R3");
-        RegisterPanel r4 = new RegisterPanel("R4");
-        RegisterPanel r5 = new RegisterPanel("R5");
-        RegisterPanel r6 = new RegisterPanel("R6 (SP)");
-        RegisterPanel r7 = new RegisterPanel("R7 (PC)");
+        RegisterPanel r0 = new RegisterPanel(0, "R0");
+        RegisterPanel r1 = new RegisterPanel(1, "R1");
+        RegisterPanel r2 = new RegisterPanel(2, "R2");
+        RegisterPanel r3 = new RegisterPanel(3, "R3");
+        RegisterPanel r4 = new RegisterPanel(4, "R4");
+        RegisterPanel r5 = new RegisterPanel(5, "R5");
+        RegisterPanel r6 = new RegisterPanel(6, "R6 (SP)");
+        RegisterPanel r7 = new RegisterPanel(7, "R7 (PC)");
 
         registers = new RegisterPanel[] { r0, r1, r2, r3, r4, r5, r6, r7 };
 
@@ -63,15 +64,18 @@ public class MainPanel extends JPanel {
         conditionPanel.add(LedDisplay.wrap(overflow, "V"));
         conditionPanel.add(LedDisplay.wrap(carry, "C"));
 
+        JPanel subPanel = new JPanel();
+        subPanel.setLayout(new BoxLayout(subPanel, BoxLayout.Y_AXIS));
+        subPanel.add(conditionPanel);
+        subPanel.add(buttons);
 
-//        GridBagLayout grid = new GridBagLayout();
-//        setLayout(grid);
-
+        JPanel lowerPanel = new JPanel();
+        lowerPanel.add(wrap(executionPanel, "Execuções"));
+        lowerPanel.add(subPanel);
 
         add(registersPanel);
-        add(wrap(executionPanel, "Execuções"));
-        add(conditionPanel);
-        add(buttons);
+        add(lowerPanel);
+
         setPreferredSize(getPreferredSize());
     }
 

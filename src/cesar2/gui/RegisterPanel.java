@@ -13,6 +13,7 @@ import javax.swing.JPanel;
 
 import cesar2.gui.display.BinaryDisplay;
 import cesar2.gui.display.DigitalDisplay;
+import cesar2.util.Pair;
 import cesar2.util.Shorts;
 
 public class RegisterPanel extends JPanel {
@@ -20,12 +21,14 @@ public class RegisterPanel extends JPanel {
 
     private boolean isDecimal = true;
     private PropertyChangeSupport support;
-    private short value;
+    private final int number;
     private final String title;
+    private short value;
     private final DigitalDisplay digitalDisplay;
     private final BinaryDisplay binaryDisplay;
 
-    public RegisterPanel(String title) {
+    public RegisterPanel(int number, String title) {
+        this.number = number;
         this.support = new PropertyChangeSupport(this);
         this.title = title;
         this.value = (short) 0;
@@ -71,7 +74,10 @@ public class RegisterPanel extends JPanel {
                     if (text != null) {
                         try {
                             short newValue = (short) Integer.parseInt(text, isDecimal ? 10 : 16);
-                            support.firePropertyChange("value", value, newValue);
+
+                            support.firePropertyChange("RegisterPanel.value", null,
+                                new Pair<Integer, Short>(number, newValue));
+
                             RegisterPanel.this.setValue(newValue);
                         }
                         catch (NumberFormatException e) {
