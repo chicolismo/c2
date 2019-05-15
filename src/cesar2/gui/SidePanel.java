@@ -24,7 +24,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import cesar2.table.Table;
+import cesar2.util.Bytes;
 import cesar2.util.Pair;
+import cesar2.util.Shorts;
 
 public class SidePanel extends JDialog {
     private static final long serialVersionUID = 598118447667354371L;
@@ -100,6 +102,11 @@ public class SidePanel extends JDialog {
         return support;
     }
 
+    public void setDecimal(boolean isDecimal) {
+        this.isDecimal = isDecimal;
+        table.setDecimal(isDecimal);
+    }
+
     private void initEvents() {
         ListSelectionModel selectionModel = table.getSelectionModel();
         selectionModel.addListSelectionListener(new ListSelectionListener() {
@@ -108,13 +115,14 @@ public class SidePanel extends JDialog {
             public void valueChanged(ListSelectionEvent e) {
                 int row = table.getSelectedRow();
                 if (row != -1) {
-                    value = table.getValue(row);
                     address = (short) row;
-                    label.setText(Integer.toString(row, isDecimal ? 10 : 16));
-                    textField.setText(Integer.toString(value, isDecimal ? 10 : 16));
+                    value = table.getValue(row);
+                    label.setText(Integer.toString(Shorts.toUnsignedInt(address), isDecimal ? 10 : 16));
+                    textField.setText(Integer.toString(Bytes.toUnsignedInt(value), isDecimal ? 10 : 16));
+                    textField.requestFocus();
+                    textField.selectAll();
                 }
             }
-
         });
 
         textField.addActionListener(new ActionListener() {
@@ -130,7 +138,12 @@ public class SidePanel extends JDialog {
                 }
                 Pair<Short, Byte> oldPair = new Pair<>(address, value);
                 Pair<Short, Byte> newPair = new Pair<>(address, newValue);
-                support.firePropertyChange("rowValue", oldPair, newPair);
+
+                int selectedRow = table.getSelectedRow();
+                if (selectedRow != -1) {
+                    table.setRowSelectionInterval(selectedRow + 1, selectedRow + 1);
+                }
+                support.firePropertyChange("SidePanel.rowValue", oldPair, newPair);
             }
         });
     }

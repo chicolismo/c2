@@ -1,4 +1,4 @@
-package cesar2;
+package cesar2.cpu;
 
 public class ConditionRegister {
     private boolean negative;

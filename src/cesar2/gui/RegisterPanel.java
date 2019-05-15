@@ -23,7 +23,6 @@ public class RegisterPanel extends JPanel {
     private PropertyChangeSupport support;
     private final int number;
     private final String title;
-    private short value;
     private final DigitalDisplay digitalDisplay;
     private final BinaryDisplay binaryDisplay;
 
@@ -31,7 +30,6 @@ public class RegisterPanel extends JPanel {
         this.number = number;
         this.support = new PropertyChangeSupport(this);
         this.title = title;
-        this.value = (short) 0;
         this.digitalDisplay = new DigitalDisplay();
         this.binaryDisplay = new BinaryDisplay();
 
@@ -60,6 +58,7 @@ public class RegisterPanel extends JPanel {
     public void setDecimal(boolean isDecimal) {
         this.isDecimal = isDecimal;
         digitalDisplay.setDecimal(isDecimal);
+        digitalDisplay.repaint();
     }
 
     private void initEvents() {

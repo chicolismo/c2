@@ -15,12 +15,14 @@ public class Memory {
     private long bytesRead;
     private long bytesWritten;
     private final PropertyChangeSupport support;
+    private boolean hasDisplayChanged;
 
     public Memory(byte[] data) {
         this.data = data;
         this.bytesRead = 0;
         this.bytesWritten = 0;
         this.support = new PropertyChangeSupport(this);
+        this.hasDisplayChanged = true;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -32,7 +34,12 @@ public class Memory {
     }
 
     private static boolean isDisplayAddress(short address) {
-        return address >= DISPLAY_START_ADDRESS && address <= DISPLAY_END_ADDRESS;
+        int uAddress = Shorts.toUnsignedInt(address);
+        return uAddress >= DISPLAY_START_ADDRESS && uAddress <= DISPLAY_END_ADDRESS;
+    }
+
+    public boolean hasDisplayChanged() {
+        return hasDisplayChanged;
     }
 
     public void setBytes(byte[] newData) {
@@ -41,6 +48,17 @@ public class Memory {
         int offset = newData.length > size() ? newData.length - dataSize : 0;
         for (int i = 0; i < size; ++i) {
             data[i] = newData[i + offset];
+        }
+        support.firePropertyChange("Memory.data", null, null);
+    }
+
+    public void setValue(short address, byte value) {
+        int index = Shorts.toUnsignedInt(address);
+        data[index] = value;
+
+        if (isDisplayAddress(address)) {
+            Pair<Integer, Byte> pair = new Pair<>(index - DISPLAY_START_ADDRESS, value);
+            support.firePropertyChange("Memory.displayMemory", null, pair);
         }
     }
 
@@ -70,19 +88,21 @@ public class Memory {
         return Memory.bytesToShort(msb, lsb);
     }
 
-    public void writeByte(short address, byte value, boolean countAccess) {
-        if (countAccess) {
-            ++bytesWritten;
-        }
+    public void writeByte(short address, byte value) {
+        ++bytesWritten;
+
         int index = Shorts.toUnsignedInt(address);
         data[index] = value;
 
-        Pair<Short, Byte> newValue = new Pair<>(address, value);
-        support.firePropertyChange("Memory.data", null, newValue);
-    }
+        {
+            Pair<Short, Byte> pair = new Pair<>(address, value);
+            support.firePropertyChange("Memory.value", null, pair);
+        }
 
-    public void writeByte(short address, byte value) {
-        writeByte(address, value, true);
+        if (isDisplayAddress(address)) {
+            Pair<Integer, Byte> pair = new Pair<>(index - DISPLAY_START_ADDRESS, value);
+            support.firePropertyChange("Memory.displayMemory", null, pair);
+        }
     }
 
     public void writeWord(short address, short value) {
@@ -93,9 +113,6 @@ public class Memory {
             // Se estivermos escrevendo uma palavra num endereço que pertence ao display,
             // apenas o byte menos significativo será escrito no endereço fornecido.
             writeByte(address, lsb);
-
-            Pair<Short, Byte> newValue = new Pair<>(address, lsb);
-            support.firePropertyChange("displayByte", null, newValue);
         }
         else {
             writeByte(address, msb);

@@ -2,11 +2,7 @@ package cesar2.cpu;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.HashMap;
-import java.util.Map;
 
-import cesar2.Alu;
-import cesar2.ConditionRegister;
 import cesar2.util.Shorts;
 
 public class Cpu {
@@ -18,7 +14,7 @@ public class Cpu {
     private static final AddressMode[] ADDRESS_MODES = AddressMode.values();
     private static final int CMP = 4;
 
-    private static final Map<Integer, String> MNEMONICS = new HashMap<>();
+//    private static final Map<Integer, String> MNEMONICS = new HashMap<>();
 
     static {
         // TODO: Continuar aqui...
@@ -30,15 +26,13 @@ public class Cpu {
     private final short[] registers;
     private final ConditionRegister conditionRegister;
     private final Alu alu;
-    private boolean isHalted;
     private final PropertyChangeSupport support;
 
     public Cpu(Memory memory) {
         this.memory = memory;
         this.registers = new short[8];
         this.conditionRegister = new ConditionRegister();
-        this.alu = new Alu(this.conditionRegister);
-        this.isHalted = false;
+        this.alu = new Alu(this);
         this.support = new PropertyChangeSupport(this);
     }
 
@@ -48,6 +42,10 @@ public class Cpu {
 
     public Memory getMemory() {
         return memory;
+    }
+
+    public ConditionRegister getConditionRegister() {
+        return conditionRegister;
     }
 
     public short[] getRegisters() {
@@ -80,6 +78,7 @@ public class Cpu {
 
     void incrementPC(int amount) {
         incrementRegister(7, amount);
+        support.firePropertyChange("Cpu.programCounter", null, null);
     }
 
     void incrementRegister(int registerNumber) {
@@ -108,12 +107,6 @@ public class Cpu {
 //        registerPanels = Objects.requireNonNull(panels);
 //    }
 
-    public void setBytes(byte[] data) {
-        memory.setBytes(data);
-//        updateTables();
-//        updateDisplay();
-    }
-
     /*
      * private void updateTables() { final int memorySize = memory.size(); for (int
      * i = 0; i < memorySize; ++i) { Byte value =
@@ -138,8 +131,6 @@ public class Cpu {
     }
 
     public void executeNextInstruction() throws HaltedException {
-        isHalted = false;
-
         byte firstByte = fetchByte();
 
         // Copia os 4 bits mais significativos
@@ -149,10 +140,10 @@ public class Cpu {
         case 0b0000: /* NOP */
             break;
         case 0b0001: /* Código de condição */
-            ccc(firstByte);
+            alu.ccc(firstByte);
             break;
         case 0b0010: /* Código de condição */
-            scc(firstByte);
+            alu.scc(firstByte);
             break;
         case 0b0011: { /* Desvio condicional */
             byte secondByte = fetchByte();
@@ -162,23 +153,23 @@ public class Cpu {
         case 0b0100: { /* Desvio incondicional (JMP) */
             byte secondByte = fetchByte();
             short word = Memory.bytesToShort(firstByte, secondByte);
-            jmp(word);
+            alu.jmp(word);
             break;
         }
         case 0b0101: { /* Instrução de controle de laço (SOB) */
             byte secondByte = fetchByte();
             short word = Memory.bytesToShort(firstByte, secondByte);
-            sob(word);
+            alu.sob(word);
             break;
         }
         case 0b0110: { /* Instrução de desvio para sub-rotina (JSR) */
             byte secondByte = fetchByte();
             short word = Memory.bytesToShort(firstByte, secondByte);
-            jsr(word);
+            alu.jsr(word);
             break;
         }
         case 0b0111: { /* Instrução de retorno de sub-rotina (RTS) */
-            rts(firstByte);
+            alu.rts(firstByte);
             break;
         }
         case 0b1000: { /* Instruções de 1 operando */
@@ -198,20 +189,9 @@ public class Cpu {
             break;
         }
         case 0b1111: /* Instrução de parada (HLT) */
-            isHalted = true;
-            break;
+            throw HaltedException.withHalt();
         default:
             throw HaltedException.withInvalidOpCode(opCode);
-        }
-
-        // TODO: Implementar isto.
-        // Verifica se a interface deve ser atualizada com os novos valores dos
-        // registradores e códigos de condição. Bem como se as tabelas devem ser
-        // alteradas.
-//        updateRegisterDisplays();
-
-        if (isHalted) {
-            throw HaltedException.withHalt();
         }
     }
 
@@ -436,113 +416,7 @@ public class Cpu {
         }
     }
 
-
-    /**
-     * Liga os códigos de condição contidos nos 4 bits menos significativos da
-     * palavra fornecida. Os quatros bits representam as condições n z v c.
-     *
-     * @param value
-     */
-    private void scc(byte value) {
-        conditionRegister.setConditions(value);
-    }
-
-    /**
-     * Desliga os códigos de condição contidos nos 4 bits menos significativos da
-     * palavra fornecida. Os quatros bits representam as condições n z v c.
-     *
-     * @param value
-     */
-    private void ccc(byte value) {
-        conditionRegister.clearConditions(value);
-    }
-
-    /* Instruções */
-    private void jmp(short word) throws HaltedException {
-        // 54 3210
-        // 0b0100_XXXX_XXMM_MRRR
-
-        // Modo de endereçamentos são os bits 3, 4, e 5.
-        int addressMode = (0b0000_0000_0011_1000 & word) >> 3;
-
-        // O número do registrador são os bits 0, 1 e 2
-        int registerNumber = 0b0000_0000_0000_0111 & word;
-
-        setPc(getOperand(addressMode, registerNumber));
-    }
-
-    private void sob(short instruction) {
-        int registerNumber = (0b0000_0111_0000_0000 & instruction) >> 8;
-        short offset = (short) (0b0000_0000_1111_1111 & instruction);
-
-        decrementRegister(registerNumber, 1);
-        if (getRegister(registerNumber) != 0) {
-            setPc((short) (getPc() - offset));
-        }
-    }
-
-    /**
-     * Os bits rrr da primeira palavra indicam um registrador, enquanto a segunda
-     * palavra é utilizada para calcular o endereço da sub-rotina, de modo idêntico
-     * à instrução de desvio incondicional (JMP). O desvio para a sub-rotina é
-     * realizado conforme a sequência de operações a seguir:
-     * 
-     * <pre>
-     *      temporário  <- endereço da subrotina
-     *      pilha       <- registrador
-     *      registrador <- R7
-     *      R7          <- temporário
-     * </pre>
-     * 
-     * Com isso, o registrador indicado na primeira palavra é colocado na pilha, a
-     * seguir o PC atual é salvo neste registrador e, finalmente, o PC recebe o
-     * enderço da sub-rotina. Noe que, se o registrador for o próprio PC, o efeito
-     * do desvio resume-se a salvar o PC atual na pilha e, então, desviar para a
-     * sub-rotina. Assim como na instrução de JMP, o uso do modo zero para o cálculo
-     * do endereço da sub-rotina é tratado como NOP.
-     * 
-     * @throws HaltedException
-     */
-    private void jsr(short instruction) throws HaltedException {
-        // 0110_xrrr_xxmm_mrrr
-
-        int reg = (0b0000_0111_0000_0000 & instruction) >> 8;
-        int addressMode = (0b0000_0000_0011_1000 & instruction) >> 3;
-        int registerNumber = (0b0000_0000_0000_0111 & instruction);
-        // o endereço da sub-rotina é lido no valor temporário
-        short temp = getOperand(addressMode, registerNumber);
-        pushStack(getRegister(reg));
-        setRegister(reg, getPc());
-        setPc(temp);
-    }
-
-    /**
-     * A instrução de retorno de sub-rotina (RTS) ocupa 1 único byte e tem o formato
-     * 0111_xrrr. O bit x pode ser qualquer valor, e <code>rrr</code> indica o
-     * registrador de retorno. A instrução realiza as seguintes operações
-     * necessárias para desfazer o efeito de uma instrução de desvio para a
-     * sub-rotina:
-     * 
-     * <pre>
-     *      R7          <- registrador
-     *      registrador <- topo da pilha
-     * </pre>
-     * 
-     * Ou seja, o PC é atualizado com o conteúdo do registrador indicado e, a
-     * seguir, este registrador é carregado com o conteúdo do topo da pilha. Se o
-     * registrador for o próprio PC, a instrução resume-se a atualizar o PC com o
-     * conteúdo do topo da pilha.
-     * 
-     * @param instruction
-     */
-    private void rts(byte instruction) {
-        // 0111_xrrr
-        int returnRegister = (0b0000_0111 & instruction);
-        setPc(getRegister(returnRegister));
-        setRegister(returnRegister, popStack());
-    }
-
-    private short getOperand(int addressMode, int reg) throws HaltedException {
+    short getOperand(int addressMode, int reg) throws HaltedException {
         short operand = 0;
         switch (ADDRESS_MODES[addressMode]) {
         case REGISTER: {
@@ -617,16 +491,6 @@ public class Cpu {
         }
     }
 
-//    public void updateRegisterDisplays() {
-//        for (int i = 0; i < 8; ++i) {
-//            registerPanels[i].setValue(getRegister(i));
-//        }
-//        conditionsPanel.setNegative(conditionRegister.isNegative());
-//        conditionsPanel.setZero(conditionRegister.isZero());
-//        conditionsPanel.setCarry(conditionRegister.isCarry());
-//        conditionsPanel.setOverflow(conditionRegister.isOverflow());
-//    }
-
     public void pushStack(short value) {
         decrementRegister(6);
         memory.writeWord(getRegister(6), value);
@@ -637,7 +501,6 @@ public class Cpu {
         incrementRegister(6);
         return word;
     }
-
 
     @Override
     public String toString() {
@@ -659,11 +522,23 @@ public class Cpu {
         return builder.toString();
     }
 
-
     public String getMnemonic(byte msb, byte lsb) {
-
-
         return null;
     }
 
+    public boolean isNegative() {
+        return conditionRegister.isNegative();
+    }
+
+    public boolean isZero() {
+        return conditionRegister.isZero();
+    }
+
+    public boolean isOverflow() {
+        return conditionRegister.isOverflow();
+    }
+
+    public boolean isCarry() {
+        return conditionRegister.isCarry();
+    }
 }
