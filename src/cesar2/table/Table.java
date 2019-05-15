@@ -12,6 +12,8 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
 import cesar2.util.Bytes;
@@ -164,6 +166,19 @@ public abstract class Table extends JTable {
         public ProgramTable(ProgramModel model) {
             super(model);
             this.model = model;
+            TableColumnModel cModel = getColumnModel();
+            TableColumn col;
+            col = cModel.getColumn(0);
+            col.setMaxWidth(22);
+            col.setResizable(false);
+
+            col = cModel.getColumn(1);
+            col.setMaxWidth(60);
+            col.setResizable(false);
+
+            col = cModel.getColumn(2);
+            col.setMaxWidth(40);
+            col.setResizable(false);
         }
 
         public void setProgramCounterRow(int rowIndex) {
@@ -190,6 +205,15 @@ public abstract class Table extends JTable {
         public DataTable(DataModel model) {
             super(model);
             this.model = model;
+            TableColumnModel cModel = getColumnModel();
+            TableColumn col;
+            col = cModel.getColumn(0);
+            col.setMaxWidth(62);
+//            col.setResizable(false);
+
+            col = cModel.getColumn(1);
+            col.setMaxWidth(62);
+//            col.setResizable(false);
         }
 
         @Override

@@ -19,7 +19,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.WindowConstants;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -57,16 +56,16 @@ public class SidePanel extends JDialog {
 
         JScrollPane scrollPane = new JScrollPane();
         scrollPane.setViewportView(table);
+        scrollPane.setPreferredSize(scrollPane.getPreferredSize());
 
         JPanel panel = new JPanel(true);
-        panel.setBorder(new EmptyBorder(4, 4, 4, 4));
+        // panel.setBorder(new EmptyBorder(4, 4, 4, 4));
         setContentPane(panel);
 
         JPanel innerPanel = new JPanel(true);
         innerPanel.setLayout(new FlowLayout(FlowLayout.RIGHT, 5, 5));
         innerPanel.add(label);
         innerPanel.add(textField);
-
 
         GridBagLayout grid = new GridBagLayout();
         grid.columnWidths = new int[] { 0 };
@@ -141,7 +140,7 @@ public class SidePanel extends JDialog {
 
                 int selectedRow = table.getSelectedRow();
                 if (selectedRow != -1) {
-                    table.setRowSelectionInterval(selectedRow + 1, selectedRow + 1);
+                    table.setRowSelectionInterval(0xFFFF & (selectedRow + 1), 0xFFFF & (selectedRow + 1));
                 }
                 support.firePropertyChange("SidePanel.rowValue", oldPair, newPair);
             }

@@ -5,7 +5,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.Insets;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeListener;
 
 import javax.swing.BoxLayout;
@@ -130,16 +129,16 @@ public class MainPanel extends JPanel {
         }
     }
 
-    public void addActionListener(ActionListener listener) {
-        buttons.addActionListener(listener);
-    }
-
     public RegisterPanel[] getRegisters() {
         return registers;
     }
 
     public ConditionsPanel getConditions() {
         return conditionsPanel;
+    }
+
+    public ButtonPanel getButtons() {
+        return buttons;
     }
 
     private static JPanel wrap(JComponent component, String title, boolean centerTitle) {

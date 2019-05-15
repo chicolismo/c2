@@ -6,7 +6,6 @@ import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
@@ -53,28 +52,22 @@ public class ButtonPanel extends JPanel {
 
         setBorder(new EmptyBorder(3, 3, 3, 3));
 
-        JPanel leftPanel = new JPanel();
-        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.X_AXIS));
         btnDecimal = new Buttons.BevelToggleButton("0..9");
-        btnDecimal.setActionCommand("decimal");
-
         btnHexadecimal = new Buttons.BevelToggleButton("0..F");
-        btnHexadecimal.setActionCommand("hexadecimal");
+        btnRun = new Buttons.BevelToggleButton(CONFIG_ICON);
+        btnNext = new Buttons.BevelButton(TOOLS_ICON);
 
         final ButtonGroup group = new ButtonGroup();
         group.add(btnDecimal);
         group.add(btnHexadecimal);
 
+        JPanel leftPanel = new JPanel();
+        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.X_AXIS));
         leftPanel.add(btnDecimal);
         leftPanel.add(btnHexadecimal);
 
         JPanel rightPanel = new JPanel();
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.X_AXIS));
-
-        btnRun = new Buttons.BevelToggleButton(CONFIG_ICON);
-        btnRun.setActionCommand("run");
-        btnNext = new Buttons.BevelButton(TOOLS_ICON);
-        btnNext.setActionCommand("next");
         rightPanel.add(btnRun);
         rightPanel.add(btnNext);
 
@@ -82,7 +75,7 @@ public class ButtonPanel extends JPanel {
         gridBagLayout.columnWidths = new int[] { 0, 0, 0 };
         gridBagLayout.rowHeights = new int[] { 0 };
         gridBagLayout.columnWeights = new double[] { 0.0, 1.0, 0.0 };
-        gridBagLayout.rowWeights = new double[] { 0.0, Double.MIN_VALUE };
+        gridBagLayout.rowWeights = new double[] { 0.0 };
         setLayout(gridBagLayout);
 
         GridBagConstraints c_0 = new GridBagConstraints();
@@ -99,11 +92,20 @@ public class ButtonPanel extends JPanel {
         add(rightPanel, c_1);
     }
 
-    public void addActionListener(ActionListener listener) {
-        btnDecimal.addActionListener(listener);
-        btnHexadecimal.addActionListener(listener);
-        btnRun.addActionListener(listener);
-        btnNext.addActionListener(listener);
+    public JToggleButton getBtnHexadecimal() {
+        return btnHexadecimal;
+    }
+
+    public JToggleButton getBtnDecimal() {
+        return btnDecimal;
+    }
+
+    public JToggleButton getBtnRun() {
+        return btnRun;
+    }
+
+    public JButton getBtnNext() {
+        return btnNext;
     }
 
     private static class Buttons {

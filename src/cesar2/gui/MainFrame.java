@@ -21,11 +21,15 @@ import java.io.InputStream;
 import java.util.Arrays;
 
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JToggleButton;
+import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
 import javax.swing.border.BevelBorder;
 import javax.swing.border.CompoundBorder;
@@ -43,7 +47,7 @@ import cesar2.table.Table;
 import cesar2.util.Pair;
 import cesar2.util.Shorts;
 
-public class MainFrame extends JFrame {
+public class MainFrame extends JFrame implements ActionListener {
     private static final long serialVersionUID = 1L;
 
     private static final int MEMORY_SIZE = 1 << 16;
@@ -67,12 +71,17 @@ public class MainFrame extends JFrame {
     private final MenuBar menuBar;
     private final JPanel statusBar;
     private final JLabel statusBarText;
+    private final JToggleButton btnDecimal;
+    private final JToggleButton btnHexadecimal;
+    private final JToggleButton btnRun;
+    private final JButton btnNext;
 
     public MainFrame() {
         super("Cesar");
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setAutoRequestFocus(true);
         setModalExclusionType(ModalExclusionType.APPLICATION_EXCLUDE);
+        setFocusable(true);
 
         JPanel contentPane = new JPanel();
         setContentPane(contentPane);
@@ -108,6 +117,11 @@ public class MainFrame extends JFrame {
         zeroDisplay = conditions.getZero();
         overflowDisplay = conditions.getOverflow();
         carryDisplay = conditions.getCarry();
+        ButtonPanel buttons = mainPanel.getButtons();
+        btnDecimal = buttons.getBtnDecimal();
+        btnHexadecimal = buttons.getBtnHexadecimal();
+        btnRun = buttons.getBtnRun();
+        btnNext = buttons.getBtnNext();
 
 
         menuBar = new MenuBar();
@@ -156,11 +170,16 @@ public class MainFrame extends JFrame {
     }
 
     private void updateSidePanelsPosition() {
-        int spacing = 20;
+        int spacing = 4;
         int width = getWidth();
+        int height = getHeight();
         Point point = getLocation();
         programPanel.setLocation(point.x - programPanel.getWidth() - spacing, point.y);
         dataPanel.setLocation(point.x + width + spacing, point.y);
+        displayPanel.setLocation(point.x - programPanel.getWidth() - spacing, point.y + height + spacing);
+
+        programPanel.setSize(280, height);
+        dataPanel.setSize(146, height);
     }
 
     private void initEvents() {
@@ -224,7 +243,10 @@ public class MainFrame extends JFrame {
     }
 
     private void run() {
-        if (!isRunning()) {
+        if (isRunning()) {
+            setRunning(false);
+        }
+        else {
             setRunning(true);
             Thread runThread = new Thread() {
                 @Override
@@ -238,6 +260,24 @@ public class MainFrame extends JFrame {
 
             };
             runThread.start();
+        }
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent event) {
+        String actionCommand = event.getActionCommand();
+
+        if (actionCommand.equals("next")) {
+            executeInstruction();
+        }
+        else if (actionCommand.equals("run")) {
+            run();
+        }
+        else if (actionCommand.equals("decimal")) {
+            setDecimal(true);
+        }
+        else if (actionCommand.equals("hexadecimal")) {
+            setDecimal(false);
         }
     }
 
@@ -342,33 +382,6 @@ public class MainFrame extends JFrame {
             }
         };
 
-        ActionListener mainPanelActionListener = new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent event) {
-                String command = event.getActionCommand();
-                if ("next".equals(command)) {
-                    executeInstruction();
-                }
-                else if ("run".equals(command)) {
-                    if (isRunning()) {
-                        setRunning(false);
-                    }
-                    else {
-                        run();
-                    }
-                }
-                else if ("decimal".equals(command)) {
-                    setDecimal(true);
-                }
-                else if ("hexadecimal".equals(command)) {
-                    setDecimal(false);
-                }
-                else {
-                    System.err.println("Ação não tratada: " + command);
-                }
-            }
-        };
-
         ActionListener menuBarActionListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
@@ -382,6 +395,43 @@ public class MainFrame extends JFrame {
             }
         };
 
+//        Action decimalAction = new AbstractAction() {
+//            private static final long serialVersionUID = 1L;
+//
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                setDecimal(true);
+//            }
+//        };
+//
+//        Action hexadecimalAction = new AbstractAction() {
+//            private static final long serialVersionUID = 1L;
+//
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                setDecimal(false);
+//            }
+//        };
+//
+//        Action runAction = new AbstractAction() {
+//            private static final long serialVersionUID = 7734044798870749806L;
+//
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                run();
+//            }
+//        };
+//
+//        Action nextAction = new AbstractAction() {
+//            private static final long serialVersionUID = 7770416677796535119L;
+//
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                executeInstruction();
+//            }
+//        };
+
+
         cpu.addPropertyChangeListener(cpuPropertyListener);
         memory.addPropertyChangeListener(memoryPropertyListener);
         programTable.addMouseListener(programTableMouseAdapter);
@@ -389,8 +439,40 @@ public class MainFrame extends JFrame {
         programPanel.addPropertyChangeListener(sidePanelPropertyListener);
         dataPanel.addPropertyChangeListener(sidePanelPropertyListener);
         mainPanel.addPropertyChangeListener(mainPanelPropertyListener);
-        mainPanel.addActionListener(mainPanelActionListener);
         menuBar.addActionListener(menuBarActionListener);
+        btnDecimal.addActionListener(this);
+        btnDecimal.setActionCommand("decimal");
+        btnHexadecimal.addActionListener(this);
+        btnHexadecimal.setActionCommand("hexadecimal");
+        btnRun.addActionListener(this);
+        btnRun.setActionCommand("run");
+        btnNext.addActionListener(this);
+        btnNext.setActionCommand("next");
+
+        btnDecimal.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("control D"), "decimal");
+        btnHexadecimal.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke("control H"),
+            "hexadecimal");
+
+//        Toolkit defaultToolkit = Toolkit.getDefaultToolkit();
+//        int mask;
+//        try {
+//            Method getKeyMask = Toolkit.class.getMethod("getMenuShortcutKeyMaskEx", new Class<?>[] {});
+//            mask = (int) getKeyMask.invoke(defaultToolkit);
+//        }
+//        catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException
+//            | InvocationTargetException e) {
+//            mask = defaultToolkit.getMenuShortcutKeyMask();
+//        }
+//        JPanel contentPane = (JPanel) getContentPane();
+//        contentPane.getInputMap().put(KeyStroke.getKeyStroke(KeyEvent.VK_D, mask), "decimal");
+//        contentPane.getActionMap().put("decimal", new AbstractAction() {
+//            private static final long serialVersionUID = 7155850655627788214L;
+//
+//            @Override
+//            public void actionPerformed(ActionEvent e) {
+//                btnDecimal.doClick();
+//            }
+//        });
     }
 
     private void loadFile() {
