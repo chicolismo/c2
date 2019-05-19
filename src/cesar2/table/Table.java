@@ -8,6 +8,7 @@ import java.awt.Rectangle;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
@@ -43,12 +44,12 @@ public abstract class Table extends JTable {
                 boolean hasFocus, int row, int column) {
                 super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                 setFont(font);
-                setHorizontalAlignment(JLabel.CENTER);
+                setHorizontalAlignment(SwingConstants.CENTER);
                 setForeground(isSelected ? selectedColor : unselectedColor);
                 return this;
             }
         };
-        pcColumnRenderer.setHorizontalAlignment(JLabel.CENTER);
+        pcColumnRenderer.setHorizontalAlignment(SwingConstants.CENTER);
         pcColumnRenderer.setFont(new Font(Font.MONOSPACED, Font.BOLD, 20));
 
         decimalByteRenderer = new DefaultTableCellRenderer() {
@@ -57,7 +58,7 @@ public abstract class Table extends JTable {
                 setText(Integer.toString(Bytes.toUnsignedInt((byte) value)));
             }
         };
-        decimalByteRenderer.setHorizontalAlignment(JLabel.RIGHT);
+        decimalByteRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
 
         decimalShortRenderer = new DefaultTableCellRenderer() {
             @Override
@@ -65,7 +66,7 @@ public abstract class Table extends JTable {
                 setText(Integer.toString(Shorts.toUnsignedInt((short) value)));
             }
         };
-        decimalShortRenderer.setHorizontalAlignment(JLabel.RIGHT);
+        decimalShortRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
 
         hexadecimalByteRenderer = new DefaultTableCellRenderer() {
             @Override
@@ -73,7 +74,7 @@ public abstract class Table extends JTable {
                 setText(Integer.toHexString(Bytes.toUnsignedInt((byte) value)));
             }
         };
-        hexadecimalByteRenderer.setHorizontalAlignment(JLabel.RIGHT);
+        hexadecimalByteRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
 
 
         hexadecimalShortRenderer = new DefaultTableCellRenderer() {
@@ -82,7 +83,7 @@ public abstract class Table extends JTable {
                 setText(Integer.toHexString(Shorts.toUnsignedInt((short) value)));
             }
         };
-        hexadecimalShortRenderer.setHorizontalAlignment(JLabel.RIGHT);
+        hexadecimalShortRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
 
         defaultTableRenderer = new DefaultTableCellRenderer();
     }
@@ -100,7 +101,7 @@ public abstract class Table extends JTable {
         header.setFont(headerFont);
         header.setReorderingAllowed(false);
         DefaultTableCellRenderer headerRenderer = (DefaultTableCellRenderer) header.getDefaultRenderer();
-        headerRenderer.setHorizontalAlignment(JLabel.CENTER);
+        headerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
 
         this.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
     }

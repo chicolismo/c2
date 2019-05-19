@@ -136,7 +136,7 @@ public class MainFrame extends JFrame implements ActionListener {
 
         JPanel mainPanelWrapper = new JPanel();
         mainPanelWrapper
-            .setBorder(new CompoundBorder(new BevelBorder(BevelBorder.LOWERED), new EmptyBorder(4, 4, 4, 4)));
+            .setBorder(new CompoundBorder(new BevelBorder(BevelBorder.LOWERED), new EmptyBorder(2, 2, 2, 2)));
         mainPanelWrapper.setLayout(new BoxLayout(mainPanelWrapper, BoxLayout.Y_AXIS));
         mainPanelWrapper.add(mainPanel);
         contentPane.add(mainPanelWrapper, BorderLayout.CENTER);

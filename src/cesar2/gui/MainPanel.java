@@ -61,14 +61,14 @@ public class MainPanel extends JPanel {
         add(innerPanel);
 
         Dimension size = getPreferredSize();
-        setPreferredSize(new Dimension(314, size.height));
+        setPreferredSize(new Dimension(296, size.height));
     }
 
     private JPanel createInnerPanel(JPanel registersPanel, JPanel executionWrapper2, JPanel rightPanel) {
         JPanel panel = new JPanel();
         GridBagLayout grid = new GridBagLayout();
         panel.setLayout(grid);
-        grid.columnWidths = new int[] { 177, 0 };
+        grid.columnWidths = new int[] { 158, 0 };
         grid.columnWeights = new double[] { 0.0, 0.0 };
         grid.rowHeights = new int[] { 0, 0 };
         grid.rowWeights = new double[] { 0.0, 0.0 };
@@ -92,7 +92,7 @@ public class MainPanel extends JPanel {
         GridBagConstraints c_2 = new GridBagConstraints();
         c_2.gridx = 1;
         c_2.gridy = 1;
-        c_2.insets = new Insets(0, 3, 0, 0);
+        c_2.insets = new Insets(0, 2, 0, 0);
         c_2.anchor = GridBagConstraints.NORTHWEST;
         c_2.fill = GridBagConstraints.BOTH;
         panel.add(rightPanel, c_2);
@@ -142,8 +142,18 @@ public class MainPanel extends JPanel {
     }
 
     private static JPanel wrap(JComponent component, String title, boolean centerTitle) {
-        JPanel panel = new JPanel(true);
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
         TitledBorder border = new TitledBorder(title);
+//        TitledBorder border = new TitledBorder(title) {
+//            private static final long serialVersionUID = -2497290415367974555L;
+//            private Insets insets = new Insets(12, 0, 3, 0);
+//
+//            @Override
+//            public Insets getBorderInsets(Component c) {
+//                return insets;
+//            }
+//        };
         if (centerTitle) {
             border.setTitleJustification(TitledBorder.TOP);
         }

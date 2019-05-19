@@ -1,7 +1,5 @@
 package cesar2.cpu;
 
-import java.util.Objects;
-
 import cesar2.util.Shorts;
 
 public class Alu {
@@ -13,7 +11,8 @@ public class Alu {
 
     public Alu(Cpu cpu) {
         this.cpu = cpu;
-        this.conditionRegister = Objects.requireNonNull(cpu.getConditionRegister());
+        // this.conditionRegister = Objects.requireNonNull(cpu.getConditionRegister());
+        this.conditionRegister = cpu.getConditionRegister();
     }
 
     private boolean isOverflow(short a, short b, short c) {

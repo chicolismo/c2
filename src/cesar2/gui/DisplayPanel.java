@@ -54,7 +54,7 @@ public class DisplayPanel extends JDialog {
     }
 
     private boolean isIndexInRange(int index) {
-        return index > 0 && index < length;
+        return index >= 0 && index < length;
     }
 
     private void initEvents() {

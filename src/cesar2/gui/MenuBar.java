@@ -2,6 +2,7 @@ package cesar2.gui;
 
 import java.awt.Toolkit;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 
 import javax.swing.JMenu;
@@ -34,7 +35,7 @@ public class MenuBar extends JMenuBar {
 
         itemSaveAs = new JMenuItem("Salvar como...");
         itemSaveAs.setActionCommand("save as");
-        itemSaveAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, mask | KeyEvent.SHIFT_DOWN_MASK));
+        itemSaveAs.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, mask | InputEvent.SHIFT_DOWN_MASK));
 
         itemExit = new JMenuItem("Sair");
         itemExit.setActionCommand("exit");

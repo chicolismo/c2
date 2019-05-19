@@ -46,6 +46,7 @@ public class LedDisplay extends JPanel {
 
     public void setTurnedOn(boolean isOn) {
         this.isOn = isOn;
+        repaint();
     }
 
     @Override

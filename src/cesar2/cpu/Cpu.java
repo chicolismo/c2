@@ -69,9 +69,6 @@ public class Cpu {
         support.firePropertyChange("Cpu.programCounter", 0, Shorts.toUnsignedInt(value));
     }
 
-    /**
-     * Incrementa PC = PC + 2
-     */
     void incrementPC() {
         incrementPC(2);
     }
@@ -96,28 +93,6 @@ public class Cpu {
     void decrementRegister(int registerNumber) {
         setRegister(registerNumber, (short) (getRegister(registerNumber) - 2));
     }
-
-//    public void notifyMemoryChange(int index, byte b) {
-//        Byte value = Byte.valueOf(b);
-//        programTable.setValueAtAndUpdate(value, index, 2);
-//        dataTable.setValueAtAndUpdate(value, index, 1);
-//    }
-
-//    public void setRegisterPanels(RegisterPanel[] panels) {
-//        registerPanels = Objects.requireNonNull(panels);
-//    }
-
-    /*
-     * private void updateTables() { final int memorySize = memory.size(); for (int
-     * i = 0; i < memorySize; ++i) { Byte value =
-     * Byte.valueOf(memory.readByte((short) i)); programTable.setValueAt(value, i,
-     * 2); dataTable.setValueAt(value, i, 1); } ((AbstractTableModel)
-     * programTable.getModel()).fireTableDataChanged(); ((AbstractTableModel)
-     * dataTable.getModel()).fireTableDataChanged(); }
-     * 
-     * private void updateDisplay() {
-     * displayPanel.setValue(memory.getDisplayBytes()); displayPanel.repaint(); }
-     */
 
     /**
      * Lê o byte cujo endereço está no R7. Incrementa o R7 em 1.
@@ -540,5 +515,107 @@ public class Cpu {
 
     public boolean isCarry() {
         return conditionRegister.isCarry();
+    }
+
+    private String getMnemonic(short instruction) {
+        int opCode = (instruction & 0b1111_0000_0000_0000) >> 12;
+
+        String string = null;
+        switch (opCode) {
+        case 0:
+            string = "NOP";
+            break;
+
+        case 1: // CCC
+        case 2: { // SCC
+            StringBuilder builder = new StringBuilder();
+            if (opCode == 1) {
+                builder.append("CCC ");
+            }
+            else {
+                builder.append("SCC ");
+            }
+            int conditions = (instruction & 0b0000_1111_0000_0000) >> 8;
+            if ((conditions & 0b1000) > 0) {
+                builder.append("N");
+            }
+            else if ((conditions & 0b0100) > 0) {
+                builder.append("Z");
+            }
+            else if ((conditions & 0b0010) > 0) {
+                builder.append("V");
+            }
+            else if ((conditions & 0b0001) > 0) {
+                builder.append("C");
+            }
+            string = builder.toString();
+        }
+            break;
+
+        case 3:
+            int code = (instruction & 0b0000_1111_0000_0000) >> 8;
+            string = getConditionalInstructionName(code);
+            break;
+
+        case 4:
+            string = "JMP";
+            break;
+
+        case 5:
+            string = "SOB";
+            // TODO: Continuar aqui...
+            break;
+
+
+        default:
+            string = "NOP";
+            break;
+        }
+
+        return string;
+    }
+
+    // NOP
+    // RTS
+    // HLT
+    private String getMnemonic(byte instruction) {
+
+        return null;
+    }
+
+    private String getConditionalInstructionName(int code) {
+        switch (code) {
+        case 0:
+            return "BR";
+        case 1:
+            return "BNE";
+        case 2:
+            return "BEQ";
+        case 3:
+            return "BPL";
+        case 4:
+            return "BMI";
+        case 5:
+            return "BCV";
+        case 6:
+            return "BVS";
+        case 7:
+            return "BCC";
+        case 8:
+            return "BCS";
+        case 9:
+            return "BGE";
+        case 10:
+            return "BLT";
+        case 11:
+            return "BGT";
+        case 12:
+            return "BLE";
+        case 13:
+            return "BHI";
+        case 14:
+            return "BLS";
+        }
+        return "";
     }
 }
